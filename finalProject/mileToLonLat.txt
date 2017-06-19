@@ -1,0 +1,74 @@
+<!--程式碼範例-->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <title>里程定位範例</title>
+	<script type="text/javascript" src="https://api.tgos.tw/TGOS_API/tgos?ver=2&AppID=yourID&APIKey=yourkey" charset="utf-8"></script>
+    <script type="text/javascript">
+        var MLlocate;
+		var marker;
+		var pMap;
+		function InitWnd() {
+            var pOMap = document.getElementById("TGMap");
+            pMap = new TGOS.TGOnlineMap(pOMap, TGOS.TGCoordSys.EPSG3826); //宣告TGOnlineMap地圖物件並設定坐標系統
+			pMap.setZoom(3);
+        }
+		function handler(results, geometry, status) {
+            console.log(arguments);
+            if (marker) {
+                marker.setMap(null);
+                marker = null;
+            }
+            if (status != TGOS.TGLocatorStatus.OK)
+                return;
+            if (!marker)
+                marker = new TGOS.TGMarker(pMap, geometry.location);
+            TWD97toWGS84 (geometry.location.x, geometry.location.y)
+			pMap.setCenter(geometry.location);
+			pMap.setZoom(11);
+        }
+		function MileageLocate() {										 //里程定位功能
+			var request = {												 //設定里程定位參數
+				mileageType: 'HIGHWAY',									 //設定道路種類
+				roadCode: document.getElementById("RDCode").value,		 //設定道路編號 (高鐵無需設定道路編號)
+				directionType: document.getElementById("RDWay").value,	 //設定南北向(僅國道有此設定)
+				mileageNum: document.getElementById("Km").value			 //設定定位里程數
+			};
+			MLlocate = new TGOS.TGLocate();								 //建立定位物件
+			MLlocate.mileage(request, TGOS.TGCoordSys.EPSG3826, handler);//執行定位功能
+		}
+      function TWD97toWGS84 (x, y)  //將TWD97(台灣)坐標系統轉換為WGS84坐標系統
+      {
+      var X97 = x
+      var Y97 =y
+      var TT = new TGOS.TGTransformation();
+      TT.twd97towgs84(X97,Y97);
+        document.getElementById("show").innerHTML = "x : " +TT.transResult.x+ ", y : " + TT.transResult.y;
+      }
+    </script>
+</head>
+<body style="margin: 0px" onload="InitWnd();">
+    <div id="TGMap" style="width: 800px; height: 550px; border: 1px solid #C0C0C0;"></div>
+	道路編號：<select id="RDCode">
+		<option value="1">國道1號</option>
+		<option value="2">國道2號</option>
+		<option value="3">國道3號</option>
+		<option value="3甲">國道3甲</option>
+		<option value="4">國道4號</option>
+		<option value="5">國道5號</option>
+		<option value="6">國道6號</option>
+		<option value="8">國道8號</option>
+		<option value="10">國道10號</option>
+	</select><br>
+	道路方向：<select id="RDWay">
+		<option value="N">北向</option>
+		<option value="S">南向</option>
+		<option value="E">東向</option>
+		<option value="W">西向</option>
+	</select><br>
+	道路里程：<input id="Km" type="text" size="7" value="373.6">公里 (可至小數第一位)<br>
+	<input type="button" value="定位" onclick="MileageLocate();"/><br />
+  	<div id = "show"></div>
+</body>
+</html>                            

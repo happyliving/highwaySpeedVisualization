@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		  <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+		  <script type ="text/script" src = "crawler.js"></script>
+		  <script type="text/javascript" src="https://d3js.org/d3.v4.min.js"></script>
+		  <script type="text/javascript" src="http://d3js.org/topojson.v1.min.js"></script>
+          <link rel=stylesheet type="text/css" href="style.css">
+          <title>Group 9 DataVisualization FinalProject</title>
+		  <style  type = "text/css">
+              
+		  </style>
+	</head>
+	<body>
+        <div id='Header'><h1>國道即時資訊<h1></div>
+		<div id='nav' float="left">
+			<select id = "roadType" onchange = "setDir()">
+				<option value = "0">國1</option>
+				<option value = "1">國2</option>
+				<option value = "2">國3</option>
+				<option value = "3">國4</option>
+				<option value = "4">國5</option>
+				<option value = "5">國6</option>
+				<option value = "6">國8</option>
+				<option value = "7">國10</option>
+			</select>
+			  
+			<select id = "direction">
+				<option value = "0">南向</option>
+				<option value = "1">北向</option>
+			</select>
+			  
+			<button onclick = "drawRoad()">send</button>
+            <span ><table id='textZone'></table></span>
+		<div>
+	   <main>
+		  <svg width="800px" height="700px" viewBox="0 0 800 700">
+		  	<rect height=50 width=30 x=0 y=350 fill="green"></rect>
+		  	<rect height=50 width=30 x=0 y=400 fill="yellow"></rect>
+		  	<rect height=50 width=30 x=0 y=450 fill="orange"></rect>
+		  	<rect height=50 width=30 x=0 y=500 fill="red"></rect>
+		  	<rect height=50 width=30 x=0 y=550 fill="black"></rect>
+		  	<text x=40 y=600>0</text>
+		  	<text x=40 y=550>20</text>
+		  	<text x=40 y=500>40</text>
+		  	<text x=40 y=450>60</text>
+		  	<text x=40 y=400>80</text>
+		  	<text x=40 y=350>100</text>
+		  	<text x=0 y=300>(km/hr)</text>
+		  </svg>
+        </main>
+		
+		<script>	
+				var speedData = new Array(8);
+				var south = [];
+				var area = [];
+				var north = [];
+				var roadType;
+				
+				for(var i = 0;i<8;i++)
+					speedData[i] = [];
+				
+				//讀目前速度資料，利用爬蟲存成json檔
+				d3.json("Speed01.json",function(json){
+						speedData[0].push(json);
+					});
+				d3.json("Speed02.json",function(json){
+						speedData[1].push(json);
+					});	
+				d3.json("Speed03.json",function(json){
+					speedData[2].push(json);
+					});
+				d3.json("Speed04.json",function(json){
+						speedData[3].push(json);
+					});	
+				d3.json("Speed05.json",function(json){
+					speedData[4].push(json);
+					});
+				d3.json("Speed06.json",function(json){
+						speedData[5].push(json);
+					});	
+				d3.json("Speed08.json",function(json){
+						speedData[6].push(json);
+					});
+				d3.json("Speed10.json",function(json){
+						speedData[7].push(json);
+					});	
+				
+				//讀台灣地圖的topojson並畫出來
+				d3.json("TaiwanMap.topojson",function(topodata){
+					var features = topojson.feature(topodata,topodata.objects["COUNTY_MOI_1051214"]).features;
+					
+					var path = d3.geoPath().projection( // 路徑產生器
+									d3.geoMercator().center([121,24]).scale(10000) // 座標變換函式
+								);
+					d3.select("svg").selectAll("path").data(features)
+					.enter().append("path")
+					.attr("id","map")
+					.attr("d",path)
+					.attr("stroke","#AAAAAA")
+					.attr("fill","#EEFFBB");
+				});
+            
+                //增加文字敘述
+                function descripton(type){
+                    var block = document.getElementById('textZone');
+                    var dir = document.getElementById('direction').value;
+                    var str, sp;
+                    var i;
+                    
+                    block.innerHTML = '<thead><tr><th>路段</th><th>Speed</th></tr></thead>';
+                    
+                    for(i = 1;i<speedData[type][0].length;i+=3){
+                        if(dir=='1')
+                            sp = speedData[type][0][i+1];                    //速度
+                        else 
+                            sp = speedData[type][0][i-1];
+                        
+                        
+                        str = '<tr><td>'+ speedData[type][0][i] +'</td>';  //路段
+                        
+                        if(sp<20)
+                            str += '<td class="b">';
+                        else if(sp<40)
+                            str += '<td class="r">';
+                        else if(sp<60)
+                            str += '<td class="o">';
+                        else if(sp<80)
+                            str += '<td class="y">';
+                        else
+                            str += '<td class="g">';
+                        str += sp + '</td></tr>';
+                        
+                        block.innerHTML += str;
+                    }
+                }
+				
+				//畫國道函式
+				function drawRoad(){
+				    descripton(document.getElementById('roadType').value); // 文字說明
+					var scale = d3.scaleLinear()//速度比例尺
+								.range([0,4])
+								.domain([0,100]);
+								
+					var color = [];	//速度對應到的顏色矩陣
+					var index = [-1,-1,-1,-1,-1,-1,-1,-1];//size of matchData					
+					
+				
+					color[0] = "black";
+					color[1] = "red";
+					color[2] = "orange";
+					color[3] = "yellow";
+					color[4] = "green";	
+				
+					//讀各國道路徑
+					d3.json("HighWay.json",function(topodata){
+						//讀各國到對應里程數的經緯度
+						d3.csv("h1.csv", function(h1) {
+						d3.csv("h2.csv", function(h2) {
+						d3.csv("h3.csv", function(h3) {
+						d3.csv("h4.csv", function(h4) {
+						d3.csv("h5.csv", function(h5) {
+						d3.csv("h6.csv", function(h6) {
+						d3.csv("h8.csv", function(h8) {
+						d3.csv("h10.csv", function(h10) {
+						//存對應經緯度
+						var matchData = new Array();
+						
+						matchData[0] = d3.nest()
+							.key(function(d) {
+								index[0]++;
+								return index[0];})
+							.sortKeys(d3.ascending)
+							.map(h1);
+							
+						matchData[1] = d3.nest()
+							.key(function(d) {
+								index[1]++;
+								return index[1];})
+							.sortKeys(d3.ascending)
+							.map(h2);
+							
+						matchData[2] = d3.nest()
+							.key(function(d) {
+								index[2]++;
+								return index[2];})
+							.sortKeys(d3.ascending)
+							.map(h3);
+						
+						matchData[3] = d3.nest()
+							.key(function(d) {
+								index[3]++;
+								return index[3];})
+							.sortKeys(d3.ascending)
+							.map(h4);
+						
+						matchData[4] = d3.nest()
+							.key(function(d) {
+								index[4]++;
+								return index[4];})
+							.sortKeys(d3.ascending)
+							.map(h5);	
+
+						matchData[5] = d3.nest()
+							.key(function(d) {
+								index[5]++;
+								return index[5];})
+							.sortKeys(d3.ascending)
+							.map(h6);
+						
+						matchData[6] = d3.nest()
+							.key(function(d) {
+								index[6]++;
+								return index[6];})
+							.sortKeys(d3.ascending)
+							.map(h8);
+						
+						matchData[7] = d3.nest()
+							.key(function(d) {
+								index[7]++;
+								return index[7];})
+							.sortKeys(d3.ascending)
+							.map(h10);
+							
+						var features = topojson.feature(topodata,topodata.objects["HighWay"]).features;
+						//console.log(features);
+						var highWay = new Array(8);
+						for(var i = 0; i < 8; i++){
+							highWay[i] = new Array();
+						}
+						
+						var roadType = parseInt(document.getElementById("roadType").value);
+						var direction = parseInt(document.getElementById("direction").value);
+						
+						//highWay存各國道路徑
+						for(items in features){
+							switch(features[items].properties.roadname){
+								case "國1":
+									highWay[0].push(features[items]);
+									break;
+								case "國2":
+									highWay[1].push(features[items]);
+									break;
+								case "國3":
+									highWay[2].push(features[items]);
+									break;
+								case "國4":
+									highWay[3].push(features[items]);
+									break;
+								case "國5":
+									highWay[4].push(features[items]);
+									break;
+								case "國6":
+									highWay[5].push(features[items]);
+									break;
+								case "國8":
+									highWay[6].push(features[items]);
+									break;
+								case "國10":
+									highWay[7].push(features[items]);
+									break;
+							}
+						}
+						
+						//用經度排序
+						for(var i = 0;i < 8;i++){
+							highWay[i].sort(function(x, y){
+								return d3.ascending(x.geometry.coordinates[0][1], y.geometry.coordinates[0][1]);
+							});
+						}
+						
+						
+																			
+						var path = d3.geoPath().projection( // 路徑產生器
+										d3.geoMercator().center([121,24]).scale(10000) // 座標變換函式
+									);
+						
+						//在每次變換選擇後移除前一個路徑						
+						d3.select("svg").selectAll(".road").remove();	
+						
+						
+						d3.select("svg").selectAll("path").data(highWay[roadType])
+						.enter().append("path")
+						.attr("id", function(d){	
+								for(var i = 0; i < index[roadType]; i++){
+									//利用經緯度判斷在哪個路段
+									if(between(matchData[roadType]["$" + i][0].lat, matchData[roadType]["$" + i][0].lon, matchData[roadType]["$" + (i+1)][0].lat, matchData[roadType]["$" + (i+1)][0].lon, d.geometry.coordinates[0])){
+										return matchData[roadType]["$" + i][0].name + "_" + matchData[roadType]["$" + (i+1)][0].name;
+									}
+								};
+							})
+						.attr("d",path)
+						.attr("class","road")
+						.attr("stroke-width",10)
+						.attr("fill", "none");
+                        var temp;
+						for(var i = 0;i < speedData[roadType][0].length/3; i++){ 
+							d3.select("svg").selectAll("#" + speedData[roadType][0][i*3+1])
+								.attr("stroke",function(){
+									if(direction == 0){
+                                        console.log(scale(speedData[roadType][0][i*3]) +' '+ speedData[roadType][0][i*3]);
+                                        temp = parseFloat(scale(speedData[roadType][0][i*3]));
+                                        temp = (temp>4)?4:(parseInt(temp)+1);
+										return color[temp];
+                                    }
+									else{
+                                        temp = parseFloat(scale(speedData[roadType][0][i*3+2]));
+                                        temp = (temp>4)?4:(parseInt(temp)+1); 
+                                        return color[temp];
+                                    }
+										
+								});
+						}
+						
+						});
+						});
+						});
+						});
+						});
+						});
+						});
+						});
+					});
+				}//end drawRoad function
+				
+				function setDir(){
+					var type = document.getElementById("roadType").value;
+					console.log(type);
+					if(parseInt(type) == 1 || parseInt(type) == 3 || parseInt(type) == 5 || parseInt(type) == 6 || parseInt(type) == 7){
+						document.getElementById('direction').innerHTML = '<option value = "0">東向</option>' + 
+																		 '<option value = "1">西向</option>';
+																		 
+					}else{
+						document.getElementById('direction').innerHTML = '<option value = "0">南向</option>' +
+																		 '<option value = "1">北向</option>';
+					}
+				}
+				
+				
+				function between(lat1 ,lon1 ,lat2 ,lon2 , coord){
+					var maxLat = Math.max(lat1, lat2);
+					var maxLon = Math.max(lon1, lon2);
+					var minLat = Math.min(lat1, lat2);
+					var minLon = Math.min(lon1, lon2);
+					if(coord[0] < maxLon && coord[0] > minLon && coord[1] < maxLat && coord[1] > minLat)	return true;
+					else return false;
+				}
+				
+				
+		  </script>
+	</body>
+</html>

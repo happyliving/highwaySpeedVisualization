@@ -1,0 +1,150 @@
+#header {
+    position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100px; 
+	overflow: hidden; /* Disables scrollbars on the header frame. To enable scrollbars, change "hidden" to "scroll" */
+    font-color: white;	
+}
+html{
+    background-color: #639FAB;
+    text-decoration-color: white;
+}
+.a{
+    text-decoration-color: white;
+}
+#nav {
+	position: absolute; 
+	top: 100px; 
+	left: 0; 
+	bottom: 0;
+	width: 260px;
+	overflow: auto; /* Scrollbars will appear on this frame only when there's enough content to require scrolling. To disable scrollbars, change to "hidden", or use "scroll" to enable permanent scrollbars */
+	background: #92EFC7; 		
+}
+main {
+    position: fixed;
+    top: 100px; /* Set this to the height of the header */
+    left: 260px; 
+    right: 0;
+    bottom: 0;
+    overflow: auto; 
+    background: #FFFFFF;
+}
+span{
+    float:left;
+    overflow:scroll; 
+    margin-top: 1em;
+}
+button {
+    margin:0;
+    padding:10px;
+    width:auto;
+    max-width:300px;
+    height:auto;
+    background-color:#929292;
+    border:none;
+    color:#fff;
+    cursor:pointer;
+    text-align:center;
+    border-radius:5px;
+    -webkit-border-radius:5px;
+    -webkit-transition:0.2s ease all;
+    -moz-transition:0.2s ease all;
+    -ms-transition:0.2s ease all;
+    -o-transition:0.2s ease all;
+    transition:0.2s ease all;
+}
+select {
+    color:cornflowerblue;
+    cursor: pointer;
+    // Sass specific RGBA mixin
+    background: rgba(white,0.5); 
+    border: 2px solid white;
+    padding: 0.5em;
+    padding-right: 1em;
+    margin-top: 0.5em;
+    margin-left: 0.5em;
+}
+svg { 
+    float:left;
+    margin: 2em;;
+}
+.r{
+    text-align: center;
+    text-decoration-color: aliceblue;
+    background-color: red;
+}
+.b{
+    text-align: center;
+    text-decoration-color: aliceblue;
+    background-color: black;
+}
+.o{
+    text-align: center;
+    text-decoration-color:darkslategrey;
+    background-color: orange;
+}
+.g{
+    text-align: center;
+    text-decoration-color:darkslategrey;
+    background-color: green;
+}
+.y{
+    text-align: center;
+    text-decoration-color:darkslategrey;
+    background-color: yellow;
+}
+    
+span::-webkit-scrollbar{
+    display: none;
+}
+
+#nav::-webkit-scrollbar{
+    display: none;
+}
+
+thead {
+    tr {
+      display: block;
+      position: relative;
+    }
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    font-family: Tahoma, Arial, Serif;
+    border-radius:2px;
+    margin: 0.5em;
+}
+
+table td, th {
+    border: 1px solid silver;
+}
+table tr{
+    font-size:6vm;
+    color: gray;
+    padding:10px;
+    background:white;
+    font-weight:normal;
+    border: 1px solid silver; 
+    height: 50px;}
+
+table tr:hover{
+    transition: ease-out 0.07s;
+    color: #383838 ;
+    background: #FFFFCC;
+}
+
+table th {
+    font-size:6vm;
+    color:white;
+    padding:10px;
+    background:gray;
+    font-weight:normal;
+    border: 1px solid silver; 
+    border-bottom: 3px solid silver;
+    height: 50px;
+}
